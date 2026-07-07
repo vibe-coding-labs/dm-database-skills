@@ -1,0 +1,18 @@
+# 达梦 JDBC 驱动（各环境自行下载放置）
+assets/*.jar
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.venv/
+venv/
+
+# IDE
+.vscode/
+.idea/
+
+# 系统
+.DS_Store
+Thumbs.db
