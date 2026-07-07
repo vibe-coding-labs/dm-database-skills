@@ -1,0 +1,6 @@
+# 达梦数据库操作 SKILLS 运行依赖
+jaydebeapi>=1.6.0
+JPype1>=1.4.0
+
+# 测试依赖
+pytest>=7.0.0
