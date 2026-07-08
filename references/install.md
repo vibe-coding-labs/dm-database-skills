@@ -30,9 +30,13 @@
 # 下载页登录后下载 DmJdbcDriver18.jar，放入项目 assets 目录
 mkdir -p assets
 cp /path/to/downloaded/DmJdbcDriver18.jar assets/
-# 校验文件存在且为有效 jar
+# 校验文件存在且为有效 jar（成功输出 DmDriver.class 行；无驱动时该命令返回非零，属正常提示缺失）
 unzip -l assets/DmJdbcDriver18.jar | grep DmDriver.class
 ```
+
+> 若 `unzip` 未安装：`sudo apt install unzip`（Debian/Ubuntu）或 `sudo yum install unzip`（RHEL/CentOS）。
+
+> 驱动就位后，脚本会在连接前自动 preflight 检查（见 scripts/dm8_common.py 的 preflight 函数），缺失时输出可操作的安装提示而非技术性报错。
 
 ## 2. Linux 安装
 
@@ -53,13 +57,13 @@ chown -R dmsa:dinstall /opt/dmdbms
 ### 2.2 配置系统参数
 
 ```bash
-# 调整最大文件句柄数（root 执行）
-cat >> /etc/security/limits.conf <<'EOF'
+# 调整最大文件句柄数（root 执行）——写入独立文件，便于回滚
+sudo tee /etc/security/limits.d/dmsa.conf > /dev/null <<'EOF'
 dmsa soft nofile 65536
 dmsa hard nofile 65536
 EOF
 
-# 检查
+# 检查（需重新登录或新会话生效）
 su - dmsa -c "ulimit -n"
 ```
 
@@ -154,3 +158,27 @@ SQL> EXIT;
 | 服务启动失败 | 检查 `dm.ini` 路径、端口占用、`logs/` 日志 |
 | disql 连接被拒 | 检查防火墙、`PORT_NUM`、SYSDBA 密码 |
 | 找不到 JDBC 驱动 | 按 SKILL.md「驱动位置」放置 jar 或设 `DM_HOME` |
+
+## 7. 可执行性测试
+
+本安装指引附自动化测试，验证各步骤命令可执行。运行：
+
+```bash
+# 安装测试依赖
+pip3 install --user jaydebeapi JPype1 pytest
+
+# 运行安装指引可执行性测试（需 sudo 用于用户/limits 步骤）
+python3 -m pytest tests/integration/test_install_guide.py -v
+```
+
+测试覆盖范围：
+
+| 测试类 | 覆盖 install.md 章节 | 说明 |
+|--------|---------------------|------|
+| TestEnvironmentBaseline | 前提条件 | Java/unzip/Python 可用 |
+| TestCreateUser | 2.1 | groupadd/useradd/chown 链可执行 |
+| TestSystemParams | 2.2 | limits 独立文件可写入 |
+| TestJdbcDriverAcquisition | 1.3 | 驱动校验命令在无驱动时正确失败 |
+| TestInstallationPackageAcquisition | 2.3/3 | 安装包获取渠道探测（无包时 skip） |
+
+> **阻塞说明**：达梦安装包（`DM8Install.bin`）与 JDBC 驱动（`DmJdbcDriver18.jar`）需登录 [eco.dameng.com](https://eco.dameng.com/download/) 账号手动下载，公开渠道无法自动获取。完整安装测试在无安装包时自动跳过，属预期行为。
