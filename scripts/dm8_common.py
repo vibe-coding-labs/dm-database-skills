@@ -59,8 +59,14 @@ def get_connection(args: argparse.Namespace):
 
     driver_path = find_driver()
     jdbc_url = JDBC_URL_TEMPLATE.format(host=args.host, port=args.port)
+    # 拼接 database 与 schema 作为 URL 查询参数
+    params = []
     if args.database:
-        jdbc_url = f"{jdbc_url}?schema={args.schema or args.user}" if args.schema else jdbc_url
+        params.append(f"db={args.database}")
+    if args.schema:
+        params.append(f"schema={args.schema}")
+    if params:
+        jdbc_url = jdbc_url + "?" + "&".join(params)
 
     conn = jaydebeapi.connect(
         DRIVER_CLASS,
