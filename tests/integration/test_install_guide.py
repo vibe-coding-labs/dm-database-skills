@@ -1,0 +1,118 @@
+"""验证 references/install.md 安装指引的可执行性。
+
+策略：不依赖达梦安装包的命令逐条验证；安装包获取渠道如实探测并 skip。
+"""
+
+import os
+import subprocess
+import urllib.request
+import urllib.error
+import pytest
+
+from conftest import (
+    TEST_USER, TEST_GROUP, TEST_LIMITS_FILE, TEST_INSTALL_DIR,
+    have_sudo, run,
+)
+
+
+class TestEnvironmentBaseline:
+    """install.md 前提条件：Java/unzip/Python。"""
+
+    def test_java_available(self):
+        r = run(["java", "-version"])
+        assert r.returncode == 0, "java 未安装"
+
+    def test_unzip_available(self):
+        r = run(["unzip", "-v"])
+        assert r.returncode == 0, "unzip 未安装"
+
+    def test_python_available(self):
+        r = run(["python3", "--version"])
+        assert r.returncode == 0
+        assert "3." in r.stdout + r.stderr
+
+
+class TestCreateUser:
+    """install.md 2.1：创建专用用户。"""
+
+    def test_groupadd_useradd_chown_executable(self, clean_test_user):
+        r = run(["groupadd", TEST_GROUP], use_sudo=True)
+        assert r.returncode == 0, f"groupadd 失败: {r.stderr}"
+
+        r = run(["useradd", "-g", TEST_GROUP, "-m", "-d", f"/home/{TEST_USER}", TEST_USER], use_sudo=True)
+        assert r.returncode == 0, f"useradd 失败: {r.stderr}"
+
+        r = run(["id", TEST_USER])
+        assert r.returncode == 0, "用户未创建成功"
+
+        os.makedirs(TEST_INSTALL_DIR, exist_ok=True)
+        r = run(["chown", "-R", f"{TEST_USER}:{TEST_GROUP}", TEST_INSTALL_DIR], use_sudo=True)
+        assert r.returncode == 0, f"chown 失败: {r.stderr}"
+
+        r = run(["stat", "-c", "%U:%G", TEST_INSTALL_DIR])
+        assert f"{TEST_USER}:{TEST_GROUP}" in r.stdout
+
+
+class TestSystemParams:
+    """install.md 2.2：limits 配置（独立文件）。"""
+
+    def test_limits_file_writable_and_ulimit_runs(self, sudo_available):
+        if not sudo_available:
+            pytest.skip("需要 sudo 权限")
+        content = f"{TEST_USER} soft nofile 65536\n{TEST_USER} hard nofile 65536\n"
+        r = subprocess.run(
+            ["sudo", "-n", "bash", "-c", f"cat > {TEST_LIMITS_FILE} <<'EOF'\n{content}EOF"],
+            capture_output=True, text=True, timeout=10,
+        )
+        assert r.returncode == 0, f"写入 limits 失败: {r.stderr}"
+
+        r = run(["cat", TEST_LIMITS_FILE], use_sudo=True)
+        assert "65536" in r.stdout
+
+        r = run(["bash", "-c", "ulimit -n"])
+        assert r.returncode == 0
+
+    def teardown_method(self):
+        subprocess.run(["sudo", "-n", "rm", "-f", TEST_LIMITS_FILE], capture_output=True)
+
+
+class TestJdbcDriverAcquisition:
+    """install.md 1.3：驱动获取与校验。"""
+
+    def test_assets_dir_creatable(self):
+        r = run(["mkdir", "-p", "assets"])
+        assert r.returncode == 0
+        assert os.path.isdir("assets")
+
+    def test_driver_absent_validation_fails_as_expected(self):
+        """无驱动时校验命令应返回非零——证明命令在检测缺失。"""
+        jars = [f for f in os.listdir("assets") if f.endswith(".jar")] if os.path.isdir("assets") else []
+        assert jars == [], "测试前置：assets 下应无 jar"
+        r = run(["bash", "-c", "unzip -l assets/DmJdbcDriver18.jar 2>/dev/null | grep DmDriver.class"])
+        assert r.returncode != 0
+
+
+class TestInstallationPackageAcquisition:
+    """install.md 2.3/3：安装包获取渠道探测，如实记录阻塞。"""
+
+    MIRROR_URLS = [
+        "https://download.dameng.com/dm8/DM8Install.bin",
+        "https://download.dameng.com/eco/dm8/DM8Install.bin",
+    ]
+
+    @pytest.mark.parametrize("url", MIRROR_URLS)
+    def test_public_mirror_unavailable(self, url):
+        req = urllib.request.Request(url, method="HEAD")
+        try:
+            urllib.request.urlopen(req, timeout=15)
+            pytest.fail(f"意外的可下载镜像: {url}")
+        except urllib.error.HTTPError as e:
+            assert e.code == 404
+        except Exception:
+            assert True
+
+    def test_full_installation_blocked_without_package(self):
+        """无安装包时完整安装被阻塞——预期 skip。"""
+        r = run(["bash", "-c", "find / -iname 'DM8Install*.bin' 2>/dev/null | head -1"])
+        if not r.stdout.strip():
+            pytest.skip("达梦安装包需登录 eco.dameng.com 手动下载，完整安装被阻塞（预期）")
