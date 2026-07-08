@@ -45,3 +45,32 @@ class TestJdbcUrlConstruction:
     def test_url_with_database_and_schema(self):
         cap = self._capture_url(make_args(database="DAMENG", schema="SCH"))
         assert "DAMENG" in cap["url"] and "SCH" in cap["url"]
+
+
+class TestPreflight:
+    """P2 回归：preflight 在缺依赖/缺驱动时给出可操作提示。"""
+
+    def test_preflight_passes_when_deps_and_driver_present(self, tmp_path):
+        jar = tmp_path / "DmJdbcDriver18.jar"
+        jar.write_text("fake")
+        fake_jaydebeapi = mock.MagicMock()
+        with mock.patch("dm8_common.DRIVER_SEARCH_PATHS", [str(jar)]), \
+             mock.patch.dict(sys.modules, {"jaydebeapi": fake_jaydebeapi}):
+            # 不抛异常即通过
+            dm8_common.preflight()
+
+    def test_preflight_reports_missing_dependency(self):
+        """缺 jaydebeapi 时提示 pip install 命令。"""
+        with mock.patch.dict(sys.modules, {"jaydebeapi": None}):
+            with pytest.raises(dm8_common.PreflightError) as exc:
+                dm8_common.preflight()
+        assert "pip install jaydebeapi" in str(exc.value)
+
+    def test_preflight_reports_missing_driver(self):
+        """缺驱动时提示放置位置。"""
+        fake_jaydebeapi = mock.MagicMock()
+        with mock.patch.dict(sys.modules, {"jaydebeapi": fake_jaydebeapi}), \
+             mock.patch("dm8_common.DRIVER_SEARCH_PATHS", ["/nonexistent/x.jar"]):
+            with pytest.raises(dm8_common.PreflightError) as exc:
+                dm8_common.preflight()
+        assert "DmJdbcDriver18.jar" in str(exc.value)

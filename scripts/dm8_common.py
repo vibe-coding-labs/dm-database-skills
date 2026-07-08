@@ -41,6 +41,30 @@ def find_driver() -> str:
     )
 
 
+class PreflightError(Exception):
+    """预检失败异常，携带可操作的用户提示。"""
+    pass
+
+
+def preflight() -> None:
+    """连接前预检：确认 jaydebeapi 依赖与 JDBC 驱动均可用。
+
+    缺失时抛 PreflightError，附带可操作的安装指引。
+    """
+    # 1. 检查 jaydebeapi 依赖
+    try:
+        import jaydebeapi  # noqa: F401
+    except ImportError:
+        raise PreflightError(
+            "缺少 Python 依赖 jaydebeapi。请运行: pip install jaydebeapi JPype1"
+        )
+    # 2. 检查 JDBC 驱动
+    try:
+        find_driver()
+    except FileNotFoundError as e:
+        raise PreflightError(str(e))
+
+
 def build_arg_parser(description: str) -> argparse.ArgumentParser:
     """构建统一的连接参数解析器。"""
     parser = argparse.ArgumentParser(description=description)
@@ -90,14 +114,17 @@ def output_json(success: bool, data: Any = None, message: str = "") -> None:
 
 
 def run_with_connection(handler, args: argparse.Namespace, action_desc: str) -> None:
-    """通用执行模板：连接 -> 执行 handler(conn, args) -> 输出结果 -> 关闭连接。"""
+    """通用执行模板：preflight 预检 -> 连接 -> 执行 handler(conn, args) -> 输出结果 -> 关闭连接。"""
     try:
+        preflight()
         conn = get_connection(args)
         try:
             result = handler(conn, args)
             output_json(True, data=result, message=f"{action_desc}成功")
         finally:
             conn.close()
+    except PreflightError as e:
+        output_json(False, message=f"预检失败: {e}")
     except FileNotFoundError as e:
         output_json(False, message=str(e))
     except Exception as e:
