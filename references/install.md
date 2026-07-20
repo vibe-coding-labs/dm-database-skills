@@ -2,6 +2,8 @@
 
 本文档引导从官方下载达梦数据库到完成实例部署。来源：[达梦在线服务平台](https://eco.dameng.com/download/)。
 
+> **快速路径**：如需最快部署且环境有 Docker，推荐使用容器方式，见 `references/docker-install.md`（无需登录官网、可由脚本自动获取 JDBC 驱动）。本文档为**物理机**安装流程（Linux/Windows）。
+
 ## 1. 下载
 
 ### 1.1 访问下载页

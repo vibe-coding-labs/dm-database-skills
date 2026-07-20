@@ -18,13 +18,38 @@ description: 达梦数据库(DM8)操作技能。涵盖下载安装部署流程(�
 
 | 场景 | 使用方式 |
 |------|---------|
-| 用户需要安装达梦数据库 | 阅读 `references/install.md`，按流程下载安装并初始化实例 |
+| 物理机安装达梦（Linux/Windows） | 阅读 `references/install.md`，按流程下载安装并初始化实例 |
+| 容器安装达梦（Docker，推荐快速体验） | 阅读 `references/docker-install.md`，拉取镜像启动容器 |
+| 自动获取 JDBC 驱动（免登录官网） | 运行 `scripts/dm8_get_driver.py`，从容器或已安装目录拷出驱动 |
 | 需要测试/连接达梦数据库 | 运行 `scripts/dm8_connect.py` |
 | 需要列出某 schema 下所有表 | 运行 `scripts/dm8_tables.py` |
 | 需要查看表结构 | 运行 `scripts/dm8_schema.py` |
 | 需要执行 SQL 查询 | 运行 `scripts/dm8_query.py` |
 | 需要查看数据库信息 | 运行 `scripts/dm8_info.py` |
 | 需要备份恢复数据库 | 阅读 `references/backup-restore.md` 或使用 dmrman |
+
+## 端到端零接触路径（从零到能查询）
+
+AI Agent 从零环境到能执行 SQL 的全自动化路径，优先容器方式（最快、可自主完成）：
+
+```bash
+# 1. 启动达梦容器
+docker run -d --name dm8 -p 5236:5236 -v /opt/dm8/data:/opt/dmdbms/data chillzhuang/dm:8.1.2.128
+
+# 2. 安装 Python 依赖
+pip install jaydebeapi JPype1
+
+# 3. 从容器自动拷出 JDBC 驱动到 assets/（无需登录官网）
+python3 scripts/dm8_get_driver.py
+
+# 4. 连接测试（默认 SYSDBA/SYSDBA001）
+python3 scripts/dm8_connect.py --host 127.0.0.1 --port 5236 --user SYSDBA --password SYSDBA001
+
+# 5. 执行 SQL
+python3 scripts/dm8_query.py --host 127.0.0.1 --user SYSDBA --password SYSDBA001 --query "SELECT SVR_VERSION FROM V\$INSTANCE"
+```
+
+完成上述 5 步即可查询达梦数据库。物理机安装路径见 `references/install.md`，容器路径见 `references/docker-install.md`。
 
 ## 快速开始
 

@@ -4,7 +4,9 @@
 
 ## 功能
 
-- **下载安装**：`references/install.md` 涵盖从官方下载到实例部署全流程
+- **物理机安装**：`references/install.md` 涵盖 Linux/Windows 下载安装与实例初始化
+- **容器安装**：`references/docker-install.md` 涵盖 Docker 镜像拉取、启动、连接验证（推荐快速体验）
+- **自动获取驱动**：`scripts/dm8_get_driver.py` 从容器或已安装目录自动拷出 JDBC 驱动（免登录官网）
 - **连接测试**：`scripts/dm8_connect.py`
 - **列出表**：`scripts/dm8_tables.py`
 - **查看表结构**：`scripts/dm8_schema.py`
@@ -37,18 +39,20 @@ python3 scripts/dm8_query.py --host 127.0.0.1 --user SYSDBA --password YOUR_PASS
 .
 ├── SKILL.md                  # 技能入口（能力清单与引导）
 ├── scripts/                  # 操作工具脚本
-│   ├── dm8_common.py         # 公共连接模块
+│   ├── dm8_common.py         # 公共连接模块（preflight 预检）
+│   ├── dm8_get_driver.py     # 自动获取 JDBC 驱动
 │   ├── dm8_connect.py        # 测试连接
 │   ├── dm8_tables.py         # 列出表
 │   ├── dm8_schema.py         # 查看表结构
 │   ├── dm8_query.py          # 执行 SQL
 │   └── dm8_info.py           # 查看库信息
 ├── references/               # 参考文档
-│   ├── install.md            # 下载安装流程
+│   ├── install.md            # 物理机下载安装流程
+│   ├── docker-install.md     # 容器安装流程
 │   ├── backup-restore.md     # 备份恢复手册
 │   └── common_queries.md     # 常用 SQL 模板
 ├── assets/                   # JDBC 驱动（不入库）
-├── tests/                    # 单元测试
+├── tests/                    # 单元 + 集成测试
 └── requirements.txt          # 依赖
 ```
 
