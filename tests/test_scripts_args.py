@@ -1,5 +1,6 @@
 """操作脚本参数解析测试（不连接真实数据库）。"""
 
+import json
 import os
 import sys
 import importlib
@@ -66,3 +67,35 @@ class TestAllScriptsHaveHelp:
         assert exc.value.code == 0
         out = capsys.readouterr().out
         assert "--password" in out
+
+
+class TestGetDriverScript:
+    """dm8_get_driver.py 参数解析与降级行为（不依赖真实容器）。"""
+
+    def test_help_exits_zero(self, capsys):
+        mod = load_script("dm8_get_driver")
+        with pytest.raises(SystemExit) as exc:
+            sys.argv = ["dm8_get_driver.py", "--help"]
+            mod.main()
+        assert exc.value.code == 0
+        out = capsys.readouterr().out
+        assert "--container" in out
+
+    def test_no_driver_returns_actionable_message(self, capsys, monkeypatch, tmp_path):
+        """无容器无安装时，应输出三种可操作替代方案并退出码 1。"""
+        mod = load_script("dm8_get_driver")
+        # 无已安装路径
+        monkeypatch.setattr(mod, "INSTALLED_PATHS", ["/nonexistent/x.jar"])
+        # 无 docker
+        monkeypatch.setattr(mod.shutil, "which", lambda _: None)
+        # assets 指向临时目录避免污染
+        monkeypatch.setattr(mod, "ASSETS_DIR", str(tmp_path / "assets"))
+        monkeypatch.setattr(mod, "TARGET_PATH", str(tmp_path / "assets" / "DmJdbcDriver18.jar"))
+
+        with pytest.raises(SystemExit) as exc:
+            sys.argv = ["dm8_get_driver.py"]
+            mod.main()
+        assert exc.value.code == 1
+        out = json.loads(capsys.readouterr().out)
+        assert out["success"] is False
+        assert "eco.dameng.com" in out["message"]

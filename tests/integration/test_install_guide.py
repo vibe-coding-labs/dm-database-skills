@@ -4,6 +4,7 @@
 """
 
 import os
+import sys
 import subprocess
 import urllib.request
 import urllib.error
@@ -116,3 +117,43 @@ class TestInstallationPackageAcquisition:
         r = run(["bash", "-c", "find / -iname 'DM8Install*.bin' 2>/dev/null | head -1"])
         if not r.stdout.strip():
             pytest.skip("达梦安装包需登录 eco.dameng.com 手动下载，完整安装被阻塞（预期）")
+
+
+class TestDockerInstallGuide:
+    """docker-install.md：容器安装流程文档存在性与命令可执行性。"""
+
+    def test_docker_install_doc_exists(self):
+        """容器安装文档存在且含关键章节。"""
+        import os
+        path = os.path.join(os.path.dirname(__file__), "..", "..", "references", "docker-install.md")
+        assert os.path.isfile(path), "references/docker-install.md 不存在"
+        with open(path) as f:
+            content = f.read()
+        # 关键章节
+        for section in ["docker run", "docker exec", "docker cp", "disql"]:
+            assert section in content, f"docker-install.md 缺少关键内容: {section}"
+
+    def test_docker_command_available_or_skip(self):
+        """若环境有 docker，docker ps 应可执行；无则 skip（如实记录）。"""
+        import shutil
+        if not shutil.which("docker"):
+            pytest.skip("环境无 docker，容器安装路径无法在此环境验证")
+        r = run(["docker", "ps"])
+        assert r.returncode == 0, f"docker ps 失败: {r.stderr}"
+
+    def test_get_driver_script_gives_actionable_hint_when_no_source(self, tmp_path, monkeypatch):
+        """无容器无安装时，dm8_get_driver.py 应给出三条可操作替代方案。"""
+        import importlib.util
+        scripts_dir = os.path.join(os.path.dirname(__file__), "..", "..", "scripts")
+        spec = importlib.util.spec_from_file_location("dm8_get_driver",
+                                                       os.path.join(scripts_dir, "dm8_get_driver.py"))
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        monkeypatch.setattr(mod, "INSTALLED_PATHS", ["/nonexistent/x.jar"])
+        monkeypatch.setattr(mod.shutil, "which", lambda _: None)
+        monkeypatch.setattr(mod, "ASSETS_DIR", str(tmp_path / "assets"))
+        monkeypatch.setattr(mod, "TARGET_PATH", str(tmp_path / "assets" / "DmJdbcDriver18.jar"))
+        monkeypatch.setattr(sys, "argv", ["dm8_get_driver.py"])
+        with pytest.raises(SystemExit) as exc:
+            mod.main()
+        assert exc.value.code == 1
