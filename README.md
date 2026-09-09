@@ -1,5 +1,9 @@
 # 达梦数据库操作 SKILLS
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Python](https://img.shields.io/badge/Python-3.8%2B-blue.svg)](https://www.python.org/)
+[![Platform](https://img.shields.io/badge/Platform-Linux%20%7C%20Windows%20%7C%20macOS%20%7C%20Docker%20%7C%20K8S%20%7C%20Mobile-green.svg)](#平台兼容)
+
 达梦数据库(DM8)操作技能集合，提供下载安装引导与连接/查询/管理工具集。
 
 ## 功能
@@ -74,9 +78,28 @@ python3 -m pytest tests/ -v
 
 ## 平台兼容
 
-✅ Windows ✅ macOS ✅ Linux
+✅ Linux (Ubuntu/CentOS) ✅ Windows ✅ Windows Server ✅ macOS ✅ Docker ✅ Docker Compose ✅ Kubernetes ✅ Android ✅ iOS
 
-## 参考
+## 官网
 
-- [达梦在线服务平台](https://eco.dameng.com/download/)
-- [达梦技术文档](https://eco.dameng.com/document/dm/zh-cn/start)
+- 构建中：`website/`（TypeScript + React + Vite）
+- 部署：GitHub Actions -> GitHub Pages
+- 预计地址：`https://vibe-coding-labs.github.io/dm-database-skills/`
+- 本地预览：进入 `website/` 执行 `npm run dev`
+
+## 文档导航
+
+- [安装文档](references/install.md) — 下载安装与实例初始化完整流程
+- [Windows Server 安装](references/windows-server-install.md) — 服务化部署
+- [Docker 安装](references/docker-install.md) — 容器部署
+- [Docker Compose](references/docker-compose.md) — 单机 compose 部署
+- [Kubernetes](references/kubernetes.md) — K8s 部署清单
+- [移动端](references/mobile-install.md) — Android/iOS 访问方式
+- [运维指南](references/operations.md) — 日常运维与故障排查
+- [监控指南](references/monitoring.md) — 监控方法与告警建议
+- [备份恢复](references/backup-restore.md) — 物理/逻辑/在线备份
+- [常用 SQL](references/common_queries.md) — 查询模板
+
+## License
+
+MIT
