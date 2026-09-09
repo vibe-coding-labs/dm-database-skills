@@ -160,6 +160,11 @@ SQL> EXIT;
 | 服务启动失败 | 检查 `dm.ini` 路径、端口占用、`logs/` 日志 |
 | disql 连接被拒 | 检查防火墙、`PORT_NUM`、SYSDBA 密码 |
 | 找不到 JDBC 驱动 | 按 SKILL.md「驱动位置」放置 jar 或设 `DM_HOME` |
+| Ubuntu 缺少 unzip | `sudo apt install unzip` |
+| CentOS/RHEL 缺少 unzip | `sudo yum install unzip` |
+| Ubuntu 防火墙放行 | `sudo ufw allow 5236/tcp` |
+| CentOS/RHEL 防火墙放行 | `sudo firewall-cmd --add-port=5236/tcp --permanent && sudo firewall-cmd --reload` |
+| 服务无法开机自启 | `sudo systemctl enable DmServiceDMSERVER` |
 
 ## 7. 可执行性测试
 

@@ -11,22 +11,28 @@ description: 达梦数据库(DM8)操作技能。涵盖下载安装部署流程(�
 
 本 SKILL 分两层：
 
-1. **下载安装层** — 文档化流程，引导从官方下载到完成实例部署
+1. **下载安装层** — 文档化流程，引导从官方下载到完成实例部署，覆盖 Linux、Windows、Windows Server、Docker、Docker Compose、Kubernetes，以及移动端与容器场景
 2. **操作工具层** — Python 脚本集，连接已部署实例执行各类操作
 
 ## 何时使用
 
 | 场景 | 使用方式 |
 |------|---------|
-| 物理机安装达梦（Linux/Windows） | 阅读 `references/install.md`，按流程下载安装并初始化实例 |
+| Linux 物理机安装达梦（Ubuntu/CentOS） | 阅读 `references/install.md`，按流程下载安装并初始化实例 |
+| Windows 桌面安装达梦 | 阅读 `references/install.md`，使用图形向导安装并初始化实例 |
+| Windows Server 安装达梦 | 阅读 `references/windows-server-install.md`，按服务化方式部署与验证 |
 | 容器安装达梦（Docker，推荐快速体验） | 阅读 `references/docker-install.md`，拉取镜像启动容器 |
+| Docker Compose 启动达梦 | 阅读 `references/docker-compose.md`，使用 compose 文件一键启停 |
+| Kubernetes 部署达梦 | 阅读 `references/kubernetes.md`，按清单部署 Deployment 与 Service |
+| 移动端使用达梦（Android/iOS） | 阅读 `references/mobile-install.md`，以远程 JDBC/Web 方式访问 |
+| 日常运维、监控、调优、故障排查 | 阅读 `references/operations.md`、`references/monitoring.md` |
+| 备份恢复数据库 | 阅读 `references/backup-restore.md` 或使用 dmrman |
 | 自动获取 JDBC 驱动（免登录官网） | 运行 `scripts/dm8_get_driver.py`，从容器或已安装目录拷出驱动 |
 | 需要测试/连接达梦数据库 | 运行 `scripts/dm8_connect.py` |
 | 需要列出某 schema 下所有表 | 运行 `scripts/dm8_tables.py` |
 | 需要查看表结构 | 运行 `scripts/dm8_schema.py` |
 | 需要执行 SQL 查询 | 运行 `scripts/dm8_query.py` |
 | 需要查看数据库信息 | 运行 `scripts/dm8_info.py` |
-| 需要备份恢复数据库 | 阅读 `references/backup-restore.md` 或使用 dmrman |
 
 ## 端到端零接触路径（从零到能查询）
 
@@ -107,5 +113,12 @@ pip install jaydebeapi JPype1
 ## 参考文档
 
 - `references/install.md` — 下载安装与实例初始化完整流程
+- `references/windows-server-install.md` — Windows Server 安装与服务化部署
+- `references/docker-install.md` — Docker 镜像拉取、启动、连接验证
+- `references/docker-compose.md` — Docker Compose 部署与常用操作
+- `references/kubernetes.md` — Kubernetes 部署清单与验证
+- `references/mobile-install.md` — Android/iOS 使用方式与限制
 - `references/backup-restore.md` — 备份恢复操作手册
+- `references/operations.md` — 日常运维与故障排查
+- `references/monitoring.md` — 监控方法与告警建议
 - `references/common_queries.md` — 常用达梦 SQL 查询模板

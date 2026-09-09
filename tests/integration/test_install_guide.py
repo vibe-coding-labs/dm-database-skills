@@ -157,3 +157,43 @@ class TestDockerInstallGuide:
         with pytest.raises(SystemExit) as exc:
             mod.main()
         assert exc.value.code == 1
+
+
+class TestNewGuidesExist:
+    """新安装文档存在性与关键章节。"""
+
+    def test_windows_server_doc_exists(self):
+        import os
+        path = os.path.join(os.path.dirname(__file__), "..", "..", "references", "windows-server-install.md")
+        assert os.path.isfile(path)
+        with open(path) as f:
+            content = f.read()
+        for keyword in ["DmServiceDMSERVER", "Test-NetConnection", "Get-Service", "防火墙放行"]:
+            assert keyword in content
+
+    def test_mobile_doc_exists(self):
+        import os
+        path = os.path.join(os.path.dirname(__file__), "..", "..", "references", "mobile-install.md")
+        assert os.path.isfile(path)
+        with open(path) as f:
+            content = f.read()
+        for keyword in ["Android", "iOS", "JDBC", "远程"]:
+            assert keyword in content
+
+    def test_docker_compose_doc_exists(self):
+        import os
+        path = os.path.join(os.path.dirname(__file__), "..", "..", "references", "docker-compose.md")
+        assert os.path.isfile(path)
+        with open(path) as f:
+            content = f.read()
+        for keyword in ["docker compose", "services:", "restart:", "healthcheck"]:
+            assert keyword in content
+
+    def test_kubernetes_doc_exists(self):
+        import os
+        path = os.path.join(os.path.dirname(__file__), "..", "..", "references", "kubernetes.md")
+        assert os.path.isfile(path)
+        with open(path) as f:
+            content = f.read()
+        for keyword in ["Deployment", "Service", "PersistentVolumeClaim", "kubectl apply"]:
+            assert keyword in content

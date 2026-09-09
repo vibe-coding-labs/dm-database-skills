@@ -4,8 +4,12 @@
 
 ## 功能
 
-- **物理机安装**：`references/install.md` 涵盖 Linux/Windows 下载安装与实例初始化
+- **物理机安装**：`references/install.md` 涵盖 Linux/Windows/Windows Server 下载安装与实例初始化
 - **容器安装**：`references/docker-install.md` 涵盖 Docker 镜像拉取、启动、连接验证（推荐快速体验）
+- **Docker Compose**：`references/docker-compose.md` 单机 compose 部署
+- **Kubernetes**：`references/kubernetes.md` K8s 部署清单与验证
+- **移动端**：`references/mobile-install.md` Android/iOS 远程访问方式
+- **运维监控**：`references/operations.md`、`references/monitoring.md`
 - **自动获取驱动**：`scripts/dm8_get_driver.py` 从容器或已安装目录自动拷出 JDBC 驱动（免登录官网）
 - **连接测试**：`scripts/dm8_connect.py`
 - **列出表**：`scripts/dm8_tables.py`
@@ -48,7 +52,13 @@ python3 scripts/dm8_query.py --host 127.0.0.1 --user SYSDBA --password YOUR_PASS
 │   └── dm8_info.py           # 查看库信息
 ├── references/               # 参考文档
 │   ├── install.md            # 物理机下载安装流程
+│   ├── windows-server-install.md  # Windows Server 安装与服务化
+│   ├── mobile-install.md     # Android/iOS 使用方式
 │   ├── docker-install.md     # 容器安装流程
+│   ├── docker-compose.md     # Docker Compose 部署
+│   ├── kubernetes.md         # Kubernetes 部署
+│   ├── operations.md         # 日常运维
+│   ├── monitoring.md         # 监控与告警
 │   ├── backup-restore.md     # 备份恢复手册
 │   └── common_queries.md     # 常用 SQL 模板
 ├── assets/                   # JDBC 驱动（不入库）
